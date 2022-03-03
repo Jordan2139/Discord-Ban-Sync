@@ -65,7 +65,6 @@ function DiscordRequest(method, endpoint, jsondata)
     while data == nil do
         Citizen.Wait(0)
     end
-	
     return data
 end
 
@@ -79,13 +78,13 @@ function checkBans(user)
         end
         if discordID then 
             local bandata = DiscordRequest("GET", "guilds/"..Config.Guild_ID.."/bans/"..discordID, {})
-                if bandata.code == 200 then
-                else
-                    return 'there was an issue'
-                end
-        return bandata
-        else 
-            return nil
+            if bandata.code == 200 then
+                return true -- member was banned
+            elseif bandata.code == 404 then -- member was not banned
+                return false
+            else 
+                return 'there was an issue'
+            end
         end
 end
 
