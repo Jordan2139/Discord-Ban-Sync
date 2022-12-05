@@ -11,6 +11,7 @@ AddEventHandler('playerConnecting', function(name, setKickReason, deferrals)
 	else
 		steam = nil
 	end
+	local ip = ids.ip:gsub('ip:', '')
 	local discord = ids.discord:gsub('discord:', '')
 	Citizen.Wait(0); -- Necessary Citizen.Wait() before deferrals.done()
 	local banstatus = checkBans(src)
@@ -22,10 +23,11 @@ AddEventHandler('playerConnecting', function(name, setKickReason, deferrals)
 		if banstatus == 'blacklisted role' then
 			print('[Discord Ban Sync] disallowing the user ' .. GetPlayerName(src) .. ' to connect as they have a blacklisted role.')
 			sendToDisc('[Discord Ban Sync] Blacklisted Member Attempted Connection!',
-			'' .. GetPlayerName(src) .. ' was declined connection due to them having a blacklisted role in ' .. GetGuildName() .. '\nSteam: **' .. steam .. '**\nDiscord Tag: ** <@' .. discord
-							.. '> **\nDiscord UID: **' .. discord .. '**\nIP:** ||' .. ids.ip:gsub('ip:', '') .. '||**');
+			           '' .. GetPlayerName(src) .. ' was declined connection due to them having a blacklisted role in ' .. GetGuildName() .. '\nSteam: **' .. steam .. '**\nDiscord Tag: ** <@' .. discord
+							           .. '> **\nDiscord UID: **' .. discord .. '**\nIP:** ||' .. ip .. '||**');
 			deferrals.done('Sorry, it seems that you have a blacklisted role in ' .. GetGuildName() .. '...')
 			CancelEvent()
+			return;
 		end
 	end
 	if not banstatus then
@@ -38,7 +40,7 @@ AddEventHandler('playerConnecting', function(name, setKickReason, deferrals)
 	elseif banstatus then
 		sendToDisc('[Discord Ban Sync] Banned Member Attempted Connection!',
 		           '' .. GetPlayerName(src) .. ' was declined connection due to them being banned from ' .. GetGuildName() .. '\nSteam: **' .. steam .. '**\nDiscord Tag: ** <@' .. discord
-						           .. '> **\nDiscord UID: **' .. discord .. '**\nIP:** ||' .. ids.ip:gsub('ip:', '') .. '||**');
+						           .. '> **\nDiscord UID: **' .. discord .. '**\nIP:** ||' .. ip .. '||**');
 		print('[Discord Ban Sync] disallowing the user ' .. GetPlayerName(src) .. ' to connect as they are banned in the discord')
 		deferrals.done('Sorry, it seems that you are banned from ' .. GetGuildName() .. '...')
 		CancelEvent()
@@ -109,6 +111,7 @@ function checkBans(user)
 		elseif bandata.code == 404 then -- member was not banned
 			return false
 		else
+			print(json.encode(bandata))
 			return 'there was an issue'
 		end
 	end
@@ -119,7 +122,6 @@ function GetGuildName()
 	if guild.code == 200 then
 		local data = json.decode(guild.data)
 		return data.name;
-	else
 	end
 	return nil;
 end
